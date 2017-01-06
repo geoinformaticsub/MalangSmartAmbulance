@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>QGIS2leaf webmap</title>
+    
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="css/leaflet.css" />
+        <link rel="stylesheet" href="css/MarkerCluster.css" />
+        <link rel="stylesheet" href="css/MarkerCluster.Default.css" />
+        <link rel="stylesheet" type="text/css" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/label.css" />
+        <script src="js/leaflet.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/label.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/leaflet.markercluster.js"></script>
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    </head>
+    <body>
+        <div id="map"></div>
+        <script src="data/json_Jatim.js"></script>
+        <script src="data/json_JaringanJalanMalang.js"></script>
+        <script src="data/json_Rumahsakitpoints.js"></script>
+        <script>
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:28, minZoom:1
+        }).fitBounds([[-8.05357351453,112.527369418],[-7.90852825428,112.759475638]]);
+        var hash = new L.Hash(map);
+        var additional_attrib = '<a href="https://github.com/tomchadwin/qgis2web" target ="_blank">qgis2web</a>';
+        var feature_group = new L.featureGroup([]);
+        var raster_group = new L.LayerGroup([]);
+        var basemap = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: additional_attrib + ' &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors,<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
+        });
+        basemap.addTo(map);
+        var layerOrder = new Array();
+        function restackLayers() {
+            for (index = 0; index < layerOrder.length; index++) {
+                layerOrder[index].bringToFront();
+            }
+        }
+        map.on('overlayadd', restackLayers);
+        layerControl = L.control.layers({},{},{collapsed:false});
+
+        function doStyleJatim(feature) {
+            return {
+                weight: 1.04,
+                color: '#000000',
+                fillColor: '#e9d254',
+                dashArray: '',
+                opacity: 1.0,
+                fillOpacity: 0.333333333333
+            };
+        }
+            var json_JatimJSON = new L.geoJson(json_Jatim, {
+                style: doStyleJatim
+            });
+            layerOrder[layerOrder.length] = json_JatimJSON;
+        layerOrder[layerOrder.length] = json_JatimJSON;
+        for (index = 0; index < layerOrder.length; index++) {
+            feature_group.removeLayer(layerOrder[index]); feature_group.addLayer(layerOrder[index]);
+        }
+        //add comment sign to hide this layer on the map in the initial view.
+        feature_group.addLayer(json_JatimJSON);
+
+        function doStyleJaringanJalanMalang(feature) {
+            switch (feature.properties.Category) {
+                case 'Highway':
+                    return {
+                    color: '#e31a1c',
+                    weight: '1.04',
+                    dashArray: '',
+                    opacity: '1.0',
+                };
+                break;
+                case 'Jalan Arteri':
+                    return {
+                    color: '#8065e2',
+                    weight: '1.04',
+                    dashArray: '',
+                    opacity: '1.0',
+                };
+                break;
+                case 'Jalan Desa':
+                    return {
+                    color: '#ff7f00',
+                    weight: '1.04',
+                    dashArray: '',
+                    opacity: '1.0',
+                };
+                break;
+                case 'Jalan Lokal/Kota':
+                    return {
+                    color: '#86df99',
+                    weight: '1.04',
+                    dashArray: '',
+                    opacity: '1.0',
+                };
+                break;
+                default:
+                    return {
+                    color: '#3fbbdd',
+                    weight: '1.04',
+                    dashArray: '',
+                    opacity: '1.0',
+                };
+                break;
+            }
+        }
+            var json_JaringanJalanMalangJSON = new L.geoJson(json_JaringanJalanMalang, {
+                style: doStyleJaringanJalanMalang
+            });
+            layerOrder[layerOrder.length] = json_JaringanJalanMalangJSON;
+        //add comment sign to hide this layer on the map in the initial view.
+        feature_group.addLayer(json_JaringanJalanMalangJSON);
+
+        var json_RumahsakitpointsJSON = new L.geoJson(json_Rumahsakitpoints, {
+            
+        pointToLayer: function (feature, latlng) {
+            return L.circleMarker(latlng, {
+                radius: 4.0,
+                fillColor: '#e31a1c',
+                color: '#000000',
+                weight: 0.0,
+                opacity: 1.0,
+                dashArray: '',
+                fillOpacity: 1.0
+            }).bindLabel(feature.properties.name, {noHide: true})
+            }
+        });
+    layerOrder[layerOrder.length] = json_RumahsakitpointsJSON;
+        //add comment sign to hide this layer on the map in the initial view.
+        feature_group.addLayer(json_RumahsakitpointsJSON);
+        raster_group.addTo(map);
+        feature_group.addTo(map);
+    </script>
+</body>
+</html>
